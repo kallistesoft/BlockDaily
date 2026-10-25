@@ -65,6 +65,7 @@ Status as of 2026-10-24: **submitted for Google review** (build 37, all countrie
 ## Later (not blocking launch)
 
 - Automated tests: PR CI with Android builds, a release smoke test on an emulator, and integration tests (deferred on 2026-10-24).
+- Play Games Services: daily challenge leaderboard and achievements (7-day streak, first 10,000-point game). Use the existing Cloud project `block-daily-b71d6`, not a new one; needs a new build and a data safety update. Play Games on PC is already on (default).
 - More languages (store listing and in-app); French is done.
 - iOS release (Apple developer account, AdMob iOS app, App Store Connect).
 - The same branded icons for Neon Breaker, Void Raid, Neon Pop, Neon Snake and Neon Stack.
