@@ -36,6 +36,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacyOptions => 'Privacy options';
 
   @override
+  String get rateApp => 'Rate Block Daily';
+
+  @override
   String noAdsPrice(String price) {
     return 'No ads · $price';
   }

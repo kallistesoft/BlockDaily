@@ -106,6 +106,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 RemoveAdsButtons(premium: services.premium),
+                if (!stats.reviewed)
+                  TextButton.icon(
+                    key: const Key('rate'),
+                    onPressed: () async {
+                      await stats.setReviewed(true);
+                      if (mounted) setState(() {});
+                      await services.review.openStoreListing();
+                    },
+                    icon: const Icon(Icons.star_rounded, color: accent, size: 18),
+                    label: Text(l10n.rateApp, style: const TextStyle(color: Colors.white70)),
+                  ),
                 if (services.privacyOptionsRequired != null)
                   ValueListenableBuilder(
                     valueListenable: services.privacyOptionsRequired!,

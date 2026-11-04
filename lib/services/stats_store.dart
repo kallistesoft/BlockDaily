@@ -75,6 +75,18 @@ class StatsStore {
   bool get premium => _prefs.getBool('premium') ?? false;
   Future<void> setPremium(bool value) => _prefs.setBool('premium', value);
 
+  /// The player tapped the "rate" button; the button and the rating prompt stay hidden afterwards.
+  bool get reviewed => _prefs.getBool('reviewed') ?? false;
+  Future<void> setReviewed(bool value) => _prefs.setBool('reviewed', value);
+
+  /// Last time the in-app rating dialog was requested.
+  DateTime? get reviewPromptedAt {
+    final ms = _prefs.getInt('reviewPromptedAt');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> setReviewPromptedAt(DateTime time) => _prefs.setInt('reviewPromptedAt', time.millisecondsSinceEpoch);
+
   bool get muted => _prefs.getBool('muted') ?? false;
   Future<void> setMuted(bool value) => _prefs.setBool('muted', value);
 

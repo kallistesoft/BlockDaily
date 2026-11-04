@@ -8,6 +8,7 @@ import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
 import 'services/crash_reporting.dart';
 import 'services/premium_service.dart';
+import 'services/review_service.dart';
 import 'services/sound_service.dart';
 import 'services/stats_store.dart';
 import 'services/update_service.dart';
@@ -30,6 +31,7 @@ Future<void> main() async {
   ValueListenable<bool>? privacyOptionsRequired;
   VoidCallback? showPrivacyOptions;
   UpdateService? updates;
+  ReviewService review = const NoReviewService();
   if (mobile) {
     try {
       await initCrashReporting();
@@ -44,6 +46,7 @@ Future<void> main() async {
     privacyOptionsRequired = admob.privacyOptionsRequired;
     showPrivacyOptions = admob.showPrivacyOptions;
     updates = UpdateService();
+    review = StoreReviewService();
     admob.init();
     store.init();
     updates.check();
@@ -53,6 +56,7 @@ Future<void> main() async {
     stats: stats,
     ads: ads,
     premium: premium,
+    review: review,
     banner: banner,
     privacyOptionsRequired: privacyOptionsRequired,
     showPrivacyOptions: showPrivacyOptions,
@@ -69,6 +73,7 @@ class BlockDailyApp extends StatelessWidget {
     required this.ads,
     required this.sound,
     this.premium,
+    this.review = const NoReviewService(),
     this.banner,
     this.privacyOptionsRequired,
     this.showPrivacyOptions,
@@ -82,6 +87,7 @@ class BlockDailyApp extends StatelessWidget {
   final AdService ads;
   final SoundService sound;
   final PremiumService? premium;
+  final ReviewService review;
   final WidgetBuilder? banner;
   final ValueListenable<bool>? privacyOptionsRequired;
   final VoidCallback? showPrivacyOptions;
@@ -101,6 +107,7 @@ class BlockDailyApp extends StatelessWidget {
       ads: ads,
       sound: sound,
       premium: premium,
+      review: review,
       banner: banner,
       privacyOptionsRequired: privacyOptionsRequired,
       showPrivacyOptions: showPrivacyOptions,

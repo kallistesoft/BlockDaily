@@ -6,6 +6,7 @@ import 'package:block_daily/game/pieces.dart';
 import 'package:block_daily/l10n/app_localizations.dart';
 import 'package:block_daily/main.dart';
 import 'package:block_daily/services/ad_service.dart';
+import 'package:block_daily/services/review_service.dart';
 import 'package:block_daily/services/sound_service.dart';
 import 'package:block_daily/services/stats_store.dart';
 import 'package:block_daily/ui/board_view.dart';
@@ -14,6 +15,8 @@ import 'package:block_daily/ui/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'review_test.dart' show FakeReview;
 
 class FakeAds implements AdService {
   int interstitials = 0;
@@ -49,7 +52,7 @@ void main() {
     sound = NoSound();
   });
 
-  Future<void> pumpGame(WidgetTester tester, Game game, {Locale? locale}) async {
+  Future<void> pumpGame(WidgetTester tester, Game game, {Locale? locale, ReviewService? review}) async {
     tester.view.physicalSize = const Size(412, 880);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -57,6 +60,7 @@ void main() {
       stats: stats,
       ads: ads,
       sound: sound,
+      review: review ?? const NoReviewService(),
       today: () => today,
       child: MaterialApp(
         locale: locale,
@@ -155,6 +159,36 @@ void main() {
     await tester.pump();
     expect(ads.interstitials, 1);
     expect(text(tester, 'score'), '0');
+  });
+
+  testWidgets('new best asks for a rating once the player has a few games behind them', (tester) async {
+    final review = FakeReview();
+    await stats.recordClassic(0);
+    await stats.recordClassic(0); // 2 games: the next one is the third
+    final game = Game.classic()..revive(); // no revive left, so the result is recorded right away
+    checkerboard(game.board);
+    game.tray.setAll(0, [piecesById['dot'], piecesById['o2'], piecesById['o2']]);
+    await pumpGame(tester, game, review: review);
+
+    await drag(tester, game, 0, 0, 1);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('🏆 New best!'), findsOneWidget);
+    expect(review.requests, 0, reason: 'the player reads "New best!" first');
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(review.requests, 1);
+    expect(stats.reviewPromptedAt, isNotNull);
+  });
+
+  testWidgets('home: rate button opens the store and then disappears', (tester) async {
+    final review = FakeReview();
+    await tester.pumpWidget(BlockDailyApp(stats: stats, ads: ads, sound: sound, review: review, today: () => today));
+    expect(find.text('Rate Block Daily'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('rate')));
+    await tester.pumpAndSettle();
+    expect(review.listings, 1);
+    expect(stats.reviewed, isTrue);
+    expect(find.byKey(const Key('rate')), findsNothing);
   });
 
   testWidgets('daily: no revive, result saved once, home shows it', (tester) async {

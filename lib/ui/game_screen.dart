@@ -7,6 +7,7 @@ import '../game/board.dart';
 import '../game/game.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
+import '../services/review_service.dart';
 import '../services/share_text.dart';
 import '../services/sound_service.dart';
 import '../services/stats_store.dart';
@@ -51,6 +52,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   late StatsStore _stats;
   late AdService _ads;
+  late ReviewService _review;
   late SoundService _sound;
   late AppLocalizations _l10n;
 
@@ -63,6 +65,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final services = Services.of(context);
     _stats = services.stats;
     _ads = services.ads;
+    _review = services.review;
     _sound = services.sound;
     _l10n = AppLocalizations.of(context);
   }
@@ -177,7 +180,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     } else {
       final best = await _stats.recordClassic(game.score);
       if (mounted) setState(() => _newBest = best);
+      if (best) _askForReview();
     }
+  }
+
+  /// A new best is the happy moment to ask for a rating; let the player read "New best!" first.
+  Future<void> _askForReview() async {
+    final prompter = ReviewPrompter(_stats, _review);
+    if (!prompter.shouldPrompt) return;
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    if (mounted && _over) await prompter.onNewBest();
   }
 
   Future<void> _revive() async {

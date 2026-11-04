@@ -36,6 +36,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get privacyOptions => 'Options de confidentialité';
 
   @override
+  String get rateApp => 'Noter Block Daily';
+
+  @override
   String noAdsPrice(String price) {
     return 'Sans pub · $price';
   }

@@ -140,6 +140,12 @@ abstract class AppLocalizations {
   /// **'Privacy options'**
   String get privacyOptions;
 
+  /// Home: opens the store page to leave a review; hidden once tapped
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Block Daily'**
+  String get rateApp;
+
   /// Remove ads purchase button; price comes localized from the store
   ///
   /// In en, this message translates to:

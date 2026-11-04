@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../services/ad_service.dart';
 import '../services/premium_service.dart';
+import '../services/review_service.dart';
 import '../services/sound_service.dart';
 import '../services/stats_store.dart';
 
@@ -15,6 +16,7 @@ class Services extends InheritedWidget {
     required this.sound,
     required this.today,
     PremiumService? premium,
+    this.review = const NoReviewService(),
     this.banner,
     this.privacyOptionsRequired,
     this.showPrivacyOptions,
@@ -25,6 +27,7 @@ class Services extends InheritedWidget {
   final AdService ads;
   final SoundService sound;
   final PremiumService premium;
+  final ReviewService review;
 
   /// Banner ad under the tray; null where there are no banners (web, tests).
   final WidgetBuilder? banner;
@@ -40,5 +43,5 @@ class Services extends InheritedWidget {
 
   @override
   bool updateShouldNotify(Services old) =>
-      old.stats != stats || old.ads != ads || old.sound != sound || old.premium != premium || old.banner != banner;
+      old.stats != stats || old.ads != ads || old.sound != sound || old.premium != premium || old.review != review || old.banner != banner;
 }
