@@ -50,11 +50,12 @@ Status as of 2026-10-24: **submitted for Google review** (build 37, all countrie
 
 ### 6. Final checks (*you* plus *Claude*)
 - [x] Play session on the Pixel (build 37 from Play): language, Remove Ads purchase and restore. Ads can only be checked after launch (AdMob limited serving).
-- [ ] Release build smoke test on the emulator (startup, no crash).
+- [x] Release build smoke test on the emulator (startup, no crash): done for builds 37 and 45.
 - [ ] Bank account verified in the payments profile (*Google*: test deposit, then *you* confirm the amount).
 
 ### 7. Production release (*you* press the button)
-- [x] Production release: build 37, all 177 countries/regions plus rest of world, release notes EN/FR; sent for review on 2026-10-24.
+- [x] Production release: build 37, all 177 countries/regions plus rest of world, release notes EN/FR; sent for review on 2026-10-24. Live since 2026-10-30.
+- [x] Release **45 (1.0.1)**: in-app rating prompt after a new best + Rate button (#16, #17); release smoke test on the emulator OK; sent for review on 2026-11-04 (100 % rollout, all countries). Bundles are ~57 MB, too big for the Chrome extension: the user drops the .aab into the release form, Claude does the rest.
 - [ ] *Google* review: usually 1 to 7 days for a new app; goes live automatically when approved.
 
 ### 8. Right after launch (*Claude*)
