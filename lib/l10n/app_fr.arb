@@ -8,6 +8,7 @@
   "dailyPlayed": "Score {score} · touchez pour partager",
   "instructions": "Glissez les blocs sur la grille. Remplissez des lignes ou des colonnes pour les effacer.",
   "privacyOptions": "Options de confidentialité",
+  "rateApp": "Noter Block Daily",
 
   "noAdsPrice": "Sans pub · {price}",
   "restorePurchase": "Restaurer l’achat",

@@ -21,6 +21,8 @@
   "@instructions": {"description": "Home: how to play"},
   "privacyOptions": "Privacy options",
   "@privacyOptions": {"description": "Home: opens the ad consent form"},
+  "rateApp": "Rate Block Daily",
+  "@rateApp": {"description": "Home: opens the store page to leave a review; hidden once tapped"},
 
   "noAdsPrice": "No ads · {price}",
   "@noAdsPrice": {
