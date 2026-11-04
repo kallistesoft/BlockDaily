@@ -55,7 +55,7 @@ Status as of 2026-10-24: **submitted for Google review** (build 37, all countrie
 
 ### 7. Production release (*you* press the button)
 - [x] Production release: build 37, all 177 countries/regions plus rest of world, release notes EN/FR; sent for review on 2026-10-24. Live since 2026-10-30.
-- [x] Release **45 (1.0.1)**: in-app rating prompt after a new best + Rate button (#16, #17); release smoke test on the emulator OK; sent for review on 2026-11-04 (100 % rollout, all countries). Bundles are ~57 MB, too big for the Chrome extension: the user drops the .aab into the release form, Claude does the rest.
+- [x] Release **45 (1.0.1)**: in-app rating prompt after a new best + Rate button (#16, #17); release smoke test on the emulator OK; published to **internal testing** on 2026-11-04. A production release (100 % rollout, all countries, notes EN/fr-CA/fr-FR) is saved in the console as "enregistré pour plus tard": once the internal build checks out, send it from Aperçu de la publication. Bundles are ~57 MB, too big for the Chrome extension: the user drops the .aab into the release form, Claude does the rest.
 - [ ] *Google* review: usually 1 to 7 days for a new app; goes live automatically when approved.
 
 ### 8. Right after launch (*Claude*)
