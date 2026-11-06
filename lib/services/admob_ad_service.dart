@@ -24,6 +24,10 @@ class AdMobAdService implements AdService {
     privacyOptionsRequired.value = await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() ==
         PrivacyOptionsRequirementStatus.required;
     if (!await ConsentInformation.instance.canRequestAds()) return;
+    // Tablet (Galaxy Tab A9+) gets test ads, so tapping our own ads never counts against the account.
+    await MobileAds.instance.updateRequestConfiguration(
+      RequestConfiguration(testDeviceIds: ['A754320E006A0A68048D3A10A6CA556A']),
+    );
     await MobileAds.instance.initialize();
     ready.value = true;
     _loadInterstitial();
