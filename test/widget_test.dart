@@ -6,6 +6,7 @@ import 'package:block_daily/game/pieces.dart';
 import 'package:block_daily/l10n/app_localizations.dart';
 import 'package:block_daily/main.dart';
 import 'package:block_daily/services/ad_service.dart';
+import 'package:block_daily/services/leaderboard_service.dart';
 import 'package:block_daily/services/review_service.dart';
 import 'package:block_daily/services/sound_service.dart';
 import 'package:block_daily/services/stats_store.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'leaderboard_test.dart' show FakeLeaderboard;
 import 'review_test.dart' show FakeReview;
 
 class FakeAds implements AdService {
@@ -52,7 +54,7 @@ void main() {
     sound = NoSound();
   });
 
-  Future<void> pumpGame(WidgetTester tester, Game game, {Locale? locale, ReviewService? review}) async {
+  Future<void> pumpGame(WidgetTester tester, Game game, {Locale? locale, ReviewService? review, LeaderboardService? leaderboard}) async {
     tester.view.physicalSize = const Size(412, 880);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -61,6 +63,7 @@ void main() {
       ads: ads,
       sound: sound,
       review: review ?? const NoReviewService(),
+      leaderboard: leaderboard ?? const NoLeaderboardService(),
       today: () => today,
       child: MaterialApp(
         locale: locale,
@@ -131,12 +134,14 @@ void main() {
     final game = Game.classic(random: Random(4));
     checkerboard(game.board);
     game.tray.setAll(0, [piecesById['dot'], piecesById['o2'], piecesById['o2']]);
-    await pumpGame(tester, game);
+    final boards = FakeLeaderboard();
+    await pumpGame(tester, game, leaderboard: boards);
 
     await drag(tester, game, 0, 0, 1);
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('No more space'), findsOneWidget);
     expect(stats.bestScore, 0, reason: 'not recorded while a revive is possible');
+    expect(boards.classic, isEmpty);
 
     await tester.tap(find.byKey(const Key('revive')));
     await tester.pump();
@@ -152,6 +157,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byKey(const Key('revive')), findsNothing);
     expect(stats.bestScore, game.score);
+    expect(boards.classic, [(game.score, 6)], reason: "sent to the shared boards once, on daily #6's day");
     expect(find.text('🏆 New best!'), findsOneWidget);
     expect(find.byKey(const Key('share')), findsOneWidget, reason: 'classic games can be shared too');
 
@@ -191,11 +197,40 @@ void main() {
     expect(find.byKey(const Key('rate')), findsNothing);
   });
 
+  testWidgets("home: top 3 boards, medal on the player's own score", (tester) async {
+    tester.view.physicalSize = const Size(412, 880);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final boards = FakeLeaderboard(const Leaderboards(
+      classicToday: [Entry(1200), Entry(800, mine: true)],
+      classicAll: [Entry(9000), Entry(5000), Entry(4000)],
+      dailyToday: [],
+    ));
+    await tester.pumpWidget(BlockDailyApp(stats: stats, ads: ads, sound: sound, leaderboard: boards, today: () => today));
+    await tester.pumpAndSettle();
+    expect(find.text('TODAY'), findsOneWidget);
+    expect(find.text('ALL TIME'), findsOneWidget);
+    expect(find.text('DAILY'), findsOneWidget);
+    expect(find.text('1. 1,200'), findsOneWidget);
+    expect(find.text('🥈 800'), findsOneWidget);
+    expect(find.text('3. 4,000'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.byKey(const Key('homeMedal')), findsOneWidget);
+  });
+
+  testWidgets('home: no boards offline', (tester) async {
+    await tester.pumpWidget(BlockDailyApp(stats: stats, ads: ads, sound: sound, leaderboard: FakeLeaderboard(), today: () => today));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('leaderboards')), findsNothing);
+    expect(find.byKey(const Key('homeMedal')), findsNothing);
+  });
+
   testWidgets('daily: no revive, result saved once, home shows it', (tester) async {
     tester.view.physicalSize = const Size(412, 880);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(BlockDailyApp(stats: stats, ads: ads, sound: sound, today: () => today));
+    final boards = FakeLeaderboard();
+    await tester.pumpWidget(BlockDailyApp(stats: stats, ads: ads, sound: sound, leaderboard: boards, today: () => today));
     expect(find.text('Daily #6'), findsOneWidget);
     expect(find.text('Same pieces for everyone today'), findsOneWidget);
 
@@ -214,6 +249,7 @@ void main() {
     expect(find.byKey(const Key('revive')), findsNothing);
     expect(find.byKey(const Key('share')), findsOneWidget);
     expect(stats.daily(6)!.score, 1);
+    expect(boards.daily, [(1, 6)]);
 
     await tester.tap(find.byKey(const Key('home')));
     await tester.pumpAndSettle();
@@ -256,10 +292,12 @@ void main() {
     tester.view.physicalSize = const Size(412, 880);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(BlockDailyApp(stats: stats, ads: ads, sound: sound, today: () => today));
+    final boards = FakeLeaderboard();
+    await tester.pumpWidget(BlockDailyApp(stats: stats, ads: ads, sound: sound, leaderboard: boards, today: () => today));
     await tester.tap(find.byKey(const Key('daily')));
     await tester.pumpAndSettle();
     expect(stats.daily(5)!.score, 42);
+    expect(boards.daily, [(42, 5)]);
     final game = (tester.widget<GameScreen>(find.byType(GameScreen))).game;
     expect(game.dailyNumber, 6);
     expect(game.score, 0);

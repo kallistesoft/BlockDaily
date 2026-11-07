@@ -146,6 +146,24 @@ abstract class AppLocalizations {
   /// **'Rate Block Daily'**
   String get rateApp;
 
+  /// Home leaderboard column: top 3 classic scores of all players today
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get leaderToday;
+
+  /// Home leaderboard column: top 3 classic scores of all players ever
+  ///
+  /// In en, this message translates to:
+  /// **'ALL TIME'**
+  String get leaderAllTime;
+
+  /// Home leaderboard column: top 3 scores of all players on today's daily puzzle
+  ///
+  /// In en, this message translates to:
+  /// **'DAILY'**
+  String get leaderDaily;
+
   /// Remove ads purchase button; price comes localized from the store
   ///
   /// In en, this message translates to:

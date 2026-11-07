@@ -23,6 +23,12 @@
   "@privacyOptions": {"description": "Home: opens the ad consent form"},
   "rateApp": "Rate Block Daily",
   "@rateApp": {"description": "Home: opens the store page to leave a review; hidden once tapped"},
+  "leaderToday": "TODAY",
+  "@leaderToday": {"description": "Home leaderboard column: top 3 classic scores of all players today"},
+  "leaderAllTime": "ALL TIME",
+  "@leaderAllTime": {"description": "Home leaderboard column: top 3 classic scores of all players ever"},
+  "leaderDaily": "DAILY",
+  "@leaderDaily": {"description": "Home leaderboard column: top 3 scores of all players on today's daily puzzle"},
 
   "noAdsPrice": "No ads · {price}",
   "@noAdsPrice": {

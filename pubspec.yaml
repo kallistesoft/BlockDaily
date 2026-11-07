@@ -49,6 +49,8 @@ dependencies:
   url_launcher: ^6.3.3
   firebase_crashlytics: ^6.0.1
   in_app_review: ^2.0.12
+  cloud_firestore: ^7.1.0
+  firebase_auth: ^7.0.1
 
 dev_dependencies:
   flutter_test:

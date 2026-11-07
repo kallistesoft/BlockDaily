@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// Block Daily leaderboards: one document per anonymous player per board, scores only (no names).
+// Deploy: Firebase console → Firestore → Rules (project block-daily-b71d6), paste this file.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function validScore() {
+      return request.resource.data.keys().hasOnly(['score'])
+          && request.resource.data.score is int
+          && request.resource.data.score >= 0
+          && request.resource.data.score <= 100000000;
+    }
+
+    function owner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Classic scores only go up.
+    function higher() {
+      return resource == null || request.resource.data.score > resource.data.score;
+    }
+
+    match /classic_all/{uid} {
+      allow read: if true;
+      allow write: if owner(uid) && validScore() && higher();
+    }
+
+    match /classic_day/{day}/scores/{uid} {
+      allow read: if true;
+      allow write: if owner(uid) && validScore() && higher();
+    }
+
+    // One daily attempt: written once, never changed.
+    match /daily_day/{day}/scores/{uid} {
+      allow read: if true;
+      allow create: if owner(uid) && validScore();
+    }
+  }
+}
