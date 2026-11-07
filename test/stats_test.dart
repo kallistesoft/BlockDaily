@@ -1,6 +1,7 @@
 import 'package:block_daily/l10n/app_localizations.dart';
 import 'package:block_daily/services/share_text.dart';
 import 'package:block_daily/services/stats_store.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -67,5 +68,12 @@ void main() {
   test('any other language falls back to English', () {
     expect(basicLocaleListResolution([const Locale('de')], AppLocalizations.supportedLocales), const Locale('en'));
     expect(basicLocaleListResolution([const Locale('fr', 'CA')], AppLocalizations.supportedLocales), const Locale('fr'));
+  });
+
+  test('shared links point to the store of the phone they are shared from', () {
+    expect(storeUrl, playStoreUrl);
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    expect(storeUrl, appStoreId.isEmpty ? 'https://kallistesoft.ca/block-daily/' : 'https://apps.apple.com/app/id$appStoreId');
   });
 }

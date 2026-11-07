@@ -46,10 +46,14 @@ class StoreReviewService implements ReviewService {
         await _review.openStoreListing();
         return;
       }
+      if (defaultTargetPlatform == TargetPlatform.iOS && appStoreId.isNotEmpty) {
+        await _review.openStoreListing(appStoreId: appStoreId);
+        return;
+      }
     } catch (_) {
       // Fall through to the web store page.
     }
-    await launchUrl(Uri.parse(playStoreUrl), mode: LaunchMode.externalApplication);
+    await launchUrl(Uri.parse(storeUrl), mode: LaunchMode.externalApplication);
   }
 }
 
