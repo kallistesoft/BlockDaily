@@ -241,13 +241,17 @@ class FirestoreLeaderboardBackend implements LeaderboardBackend {
   }
 }
 
-/// App Check: Firestore only answers the genuine app from Google Play (Play Integrity), so scripts can't post scores.
+/// App Check: Firestore only answers the genuine app (Play Integrity on Android, App Attest on iOS), so scripts can't
+/// post scores.
 /// Debug builds use the debug provider; pass `--dart-define=APP_CHECK_DEBUG_TOKEN=<token registered in the console>`,
 /// or read the token the SDK logs on first run and register it.
 Future<void> initAppCheck() => FirebaseAppCheck.instance.activate(
       providerAndroid: kDebugMode
           ? AndroidDebugProvider(debugToken: _debugToken.isEmpty ? null : _debugToken)
           : const AndroidPlayIntegrityProvider(),
+      providerApple: kDebugMode
+          ? AppleDebugProvider(debugToken: _debugToken.isEmpty ? null : _debugToken)
+          : const AppleAppAttestWithDeviceCheckFallbackProvider(),
     );
 
 const _debugToken = String.fromEnvironment('APP_CHECK_DEBUG_TOKEN');

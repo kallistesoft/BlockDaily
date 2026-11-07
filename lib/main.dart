@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'game/game.dart';
 import 'l10n/app_localizations.dart';
 
+import 'services/ad_ids.dart';
 import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
 import 'services/crash_reporting.dart';
@@ -25,8 +26,9 @@ Future<void> main() async {
   final stats = await StatsStore.open();
   final firstLaunch = stats.firstLaunch();
 
-  // Real ads and the "Remove Ads" purchase on Android only for now; web and iOS stay ad-free.
-  final mobile = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  // Ads, the "Remove Ads" purchase and Firebase on phones; the web build stays ad-free.
+  final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  final mobile = android || (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS);
   AdService ads = const NoAdService();
   PremiumService premium = NoPremiumService();
   WidgetBuilder? banner;
@@ -46,18 +48,24 @@ Future<void> main() async {
     } catch (_) {
       // Never block the game because Firebase couldn't start.
     }
-    final admob = AdMobAdService();
-    final store = StorePremiumService(stats);
-    premium = store;
-    ads = PremiumAwareAdService(FrequencyCappedAdService(admob, firstLaunch: firstLaunch), () => store.isPremium);
-    banner = (_) => admob.banner();
-    privacyOptionsRequired = admob.privacyOptionsRequired;
-    showPrivacyOptions = admob.showPrivacyOptions;
-    updates = UpdateService();
+    // Without ad units (iOS release before its AdMob app exists) there are no ads, so nothing to remove either.
+    if (AdIds.configured) {
+      final admob = AdMobAdService();
+      final store = StorePremiumService(stats);
+      premium = store;
+      ads = PremiumAwareAdService(FrequencyCappedAdService(admob, firstLaunch: firstLaunch), () => store.isPremium);
+      banner = (_) => admob.banner();
+      privacyOptionsRequired = admob.privacyOptionsRequired;
+      showPrivacyOptions = admob.showPrivacyOptions;
+      admob.init();
+      store.init();
+    }
     review = StoreReviewService();
-    admob.init();
-    store.init();
-    updates.check();
+    // Forced/recommended updates use Google Play's in-app update API; the App Store has no equivalent.
+    if (android) {
+      updates = UpdateService();
+      updates.check();
+    }
   }
 
   runApp(BlockDailyApp(

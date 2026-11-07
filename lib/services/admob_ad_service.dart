@@ -1,12 +1,14 @@
 import 'dart:async';
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'ad_ids.dart';
 import 'ad_service.dart';
 
-/// Google AdMob on Android. Ads are preloaded so they show instantly at game over.
+/// Google AdMob (Android and iOS). Ads are preloaded so they show instantly at game over.
 class AdMobAdService implements AdService {
   InterstitialAd? _interstitial;
   RewardedAd? _rewarded;
@@ -24,10 +26,22 @@ class AdMobAdService implements AdService {
     privacyOptionsRequired.value = await ConsentInformation.instance.getPrivacyOptionsRequirementStatus() ==
         PrivacyOptionsRequirementStatus.required;
     if (!await ConsentInformation.instance.canRequestAds()) return;
+    await _askTracking();
     await MobileAds.instance.initialize();
     ready.value = true;
     _loadInterstitial();
     _loadRewarded();
+  }
+
+  /// iOS: Apple's App Tracking Transparency prompt, after the consent form as Google recommends. A refusal only
+  /// means non-personalized ads.
+  Future<void> _askTracking() async {
+    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    try {
+      if (await AppTrackingTransparency.trackingAuthorizationStatus == TrackingStatus.notDetermined) {
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+    } catch (_) {}
   }
 
   Future<void> _gatherConsent() {

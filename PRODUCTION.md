@@ -68,5 +68,18 @@ Status as of 2026-10-24: **submitted for Google review** (build 37, all countrie
 - Automated tests: PR CI with Android builds, a release smoke test on an emulator, and integration tests (deferred on 2026-10-24).
 - Play Games Services: daily challenge leaderboard and achievements (7-day streak, first 10,000-point game). Use the existing Cloud project `block-daily-b71d6`, not a new one; needs a new build and a data safety update. Play Games on PC is already on (default).
 - More languages (store listing and in-app); French is done.
-- iOS release (Apple developer account, AdMob iOS app, App Store Connect).
+- iOS release: see "iOS (App Store)" below.
 - The same branded icons for Neon Breaker, Void Raid, Neon Pop, Neon Snake and Neon Stack.
+
+## iOS (App Store)
+
+Code ready on branch `ios-release` (2026-11-07): ads, Remove Ads, Firebase, leaderboards and App Check enabled on iOS; ATT prompt after the consent form; iPhone only, portrait; share/rate links go to the App Store (the game's web page until `appStoreId` is set). Runs on the iOS simulator.
+
+1. [ ] Apple Developer Program, Organization (9536-3529 Québec Inc., D-U-N-S, kallistesoft.ca). *User* (Claude can't enroll, sign in or pay).
+2. [ ] App Store Connect: accept the Paid Apps agreement, banking and tax (needed for Remove Ads). *User*
+3. [ ] Firebase: register the iOS app `ca.kallistesoft.blockDaily` in `block-daily-b71d6`, add `ios/Runner/GoogleService-Info.plist` (git-ignored, CI secret), register it in App Check with App Attest (team ID needed). *Claude, with OK*
+4. [ ] AdMob: create the iOS app and its 3 units; put the app ID in `Info.plist` (`GADApplicationIdentifier`, now Google's test ID) and the units in `lib/services/ad_ids.dart` (iOS release has no ads until then). Add the IDFA message in AdMob privacy & messaging. *Claude, with OK*
+5. [ ] Signing: set the team in Xcode (`DEVELOPMENT_TEAM`), automatic signing; App ID with In-App Purchase. *Claude, once the account exists*
+6. [ ] App Store Connect app: name Block Daily, bundle `ca.kallistesoft.blockDaily`, SKU, primary language English + French; set `appStoreId` in `lib/services/share_text.dart`. In-app purchase `remove_ads` (non-consumable). *Claude prepares, user approves*
+7. [ ] Listing: description (from Play), 6.9" iPhone screenshots (iPhone 18 Pro Max simulator), privacy nutrition label (identifiers + gameplay content, not linked; ads data per Google), age rating, privacy URL kallistesoft.ca/en/privacy/block-daily/ (add the iOS details: ATT, App Attest).
+8. [ ] Build and upload with Xcode / `flutter build ipa`, TestFlight on a real iPhone, then submit for review.

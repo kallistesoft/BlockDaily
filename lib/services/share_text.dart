@@ -1,8 +1,19 @@
+import 'package:flutter/foundation.dart';
+
 import '../l10n/app_localizations.dart';
 import 'stats_store.dart';
 
-/// Store page, added to every shared result so friends can install the game in one tap.
 const playStoreUrl = 'https://play.google.com/store/apps/details?id=ca.kallistesoft.block_daily';
+
+/// App Store numeric id, known once the app exists in App Store Connect; empty until then.
+const appStoreId = '';
+
+/// Store page added to every shared result so friends can install the game in one tap: the App Store from an
+/// iPhone (the game's web page until the App Store id is known), Google Play everywhere else.
+String get storeUrl {
+  if (defaultTargetPlatform != TargetPlatform.iOS) return playStoreUrl;
+  return appStoreId.isEmpty ? 'https://kallistesoft.ca/block-daily/' : 'https://apps.apple.com/app/id$appStoreId';
+}
 
 /// Groups thousands: `18,240` in English, `18 240` (narrow no-break space) in French.
 String formatScore(int n, {String locale = 'en'}) {
@@ -19,7 +30,7 @@ String dailyShareText(DailyResult r, {required int streak, required AppLocalizat
     '⭐ ${formatScore(r.score, locale: l10n.localeName)}',
     if (r.bestCombo > 0) '$fire combo x${r.bestCombo} · ${l10n.shareLines(r.lines)}',
     if (streak > 1) l10n.shareStreak(streak),
-    playStoreUrl,
+    storeUrl,
   ].join('\n');
 }
 
@@ -29,6 +40,6 @@ String classicShareText({required int score, required bool newBest, required App
   return [
     'Block Daily 🧩',
     newBest ? l10n.shareNewBest(formatted) : '⭐ $formatted',
-    playStoreUrl,
+    storeUrl,
   ].join('\n');
 }
