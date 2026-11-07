@@ -158,6 +158,7 @@
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
+				B10CDA1F2F00000000000001 /* Copy Firebase config */,
 			);
 			buildRules = (
 			);
@@ -265,6 +266,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+		};
+		B10CDA1F2F00000000000001 /* Copy Firebase config */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Firebase config";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# GoogleService-Info.plist is git-ignored (like google-services.json): copy it into the app when present.\n# Without it Firebase (leaderboards, Crashlytics) stays off and the game still runs.\nsrc=\"${PROJECT_DIR}/Runner/GoogleService-Info.plist\"\nif [ -f \"$src\" ]; then\n  cp \"$src\" \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\nelse\n  echo \"warning: GoogleService-Info.plist missing, Firebase is off in this build\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
