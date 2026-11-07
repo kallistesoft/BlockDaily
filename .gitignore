@@ -49,3 +49,6 @@ app.*.map.json
 
 # Firebase config (Remote Config); CI gets it from the GOOGLE_SERVICES_JSON secret.
 android/app/google-services.json
+
+# Firebase iOS config (like android/app/google-services.json): kept out of git
+ios/Runner/GoogleService-Info.plist
