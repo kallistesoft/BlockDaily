@@ -12,10 +12,10 @@ class AdIds {
   static String get _testBanner =>
       _ios ? 'ca-app-pub-3940256099942544/2934735716' : 'ca-app-pub-3940256099942544/6300978111';
 
-  // iOS units: fill in once the iOS app exists in AdMob (same account, see PRODUCTION.md).
-  static const _iosInterstitial = '';
-  static const _iosRewarded = '';
-  static const _iosBanner = '';
+  // iOS app ca-app-pub-7557144664039757~6179515986 (same AdMob account and unit names as Android).
+  static const _iosInterstitial = 'ca-app-pub-7557144664039757/1927436470'; // game over
+  static const _iosRewarded = 'ca-app-pub-7557144664039757/9614354807'; // continue
+  static const _iosBanner = 'ca-app-pub-7557144664039757/5954311390'; // game bottom
 
   static String get _interstitial => _ios ? _iosInterstitial : 'ca-app-pub-7557144664039757/9251474873';
   static String get _rewarded => _ios ? _iosRewarded : 'ca-app-pub-7557144664039757/3947177308';
