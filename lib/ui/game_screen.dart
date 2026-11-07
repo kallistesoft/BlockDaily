@@ -7,6 +7,7 @@ import '../game/board.dart';
 import '../game/game.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
+import '../services/leaderboard_service.dart';
 import '../services/review_service.dart';
 import '../services/share_text.dart';
 import '../services/sound_service.dart';
@@ -53,6 +54,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late StatsStore _stats;
   late AdService _ads;
   late ReviewService _review;
+  late LeaderboardService _leaderboard;
+  late DateTime Function() _today;
   late SoundService _sound;
   late AppLocalizations _l10n;
 
@@ -66,6 +69,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _stats = services.stats;
     _ads = services.ads;
     _review = services.review;
+    _leaderboard = services.leaderboard;
+    _today = services.today;
     _sound = services.sound;
     _l10n = AppLocalizations.of(context);
   }
@@ -177,8 +182,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (_isDaily) {
       await _stats.recordDaily(DailyResult(
           number: game.dailyNumber!, score: game.score, bestCombo: game.bestCombo, lines: game.linesCleared));
+      _leaderboard.submitDaily(game.score, game.dailyNumber!);
     } else {
       final best = await _stats.recordClassic(game.score);
+      _leaderboard.submitClassic(game.score, dailyNumberFor(_today()));
       if (mounted) setState(() => _newBest = best);
       if (best) _askForReview();
     }

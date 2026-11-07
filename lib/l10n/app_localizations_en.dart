@@ -39,6 +39,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rateApp => 'Rate Block Daily';
 
   @override
+  String get leaderToday => 'TODAY';
+
+  @override
+  String get leaderAllTime => 'ALL TIME';
+
+  @override
+  String get leaderDaily => 'DAILY';
+
+  @override
   String noAdsPrice(String price) {
     return 'No ads · $price';
   }

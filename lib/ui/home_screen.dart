@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../game/game.dart';
 import '../game/pieces.dart';
 import '../l10n/app_localizations.dart';
+import '../services/leaderboard_service.dart';
 import '../services/share_text.dart';
 import '../services/stats_store.dart';
 import 'board_view.dart';
@@ -20,6 +21,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  /// Top scores of all players: fetched once a day (a no-op once loaded), then kept up to date by the player's posts.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadBoards();
+  }
+
+  void _loadBoards() {
+    final services = Services.of(context);
+    services.leaderboard.load(dailyNumberFor(services.today()));
+  }
+
   /// Classic: resume the saved game if there is one.
   Game _classic(StatsStore stats) {
     final saved = stats.savedGame(GameMode.classic.name);
@@ -34,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (game.dailyNumber == today) return game;
       await stats.recordDaily(DailyResult(
           number: game.dailyNumber!, score: game.score, bestCombo: game.bestCombo, lines: game.linesCleared));
+      if (mounted) Services.of(context).leaderboard.submitDaily(game.score, game.dailyNumber!);
       await stats.clearGame(GameMode.daily.name);
     }
     return Game.daily(today);
@@ -41,7 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _open(Game game) async {
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => GameScreen(game: game)));
-    if (mounted) setState(() {}); // refresh best score and daily status
+    if (!mounted) return;
+    _loadBoards(); // a new day since the last load, or the network is back
+    setState(() {}); // refresh best score and daily status
   }
 
   @override
@@ -74,6 +90,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(formatScore(stats.bestScore, locale: l10n.localeName),
                       key: const Key('homeBest'),
                       style: const TextStyle(color: accent, fontSize: 20, fontWeight: FontWeight.w800)),
+                  ValueListenableBuilder(
+                    valueListenable: services.leaderboard.boards,
+                    builder: (_, boards, _) {
+                      final place = boards?.classicPlace;
+                      if (place == null) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 6),
+                        child: Text(medals[place], key: const Key('homeMedal'), style: const TextStyle(fontSize: 20)),
+                      );
+                    },
+                  ),
                 ]),
                 const Spacer(),
                 FilledButton(
@@ -97,6 +124,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   onShare: daily == null
                       ? null
                       : () => shareText(context, dailyShareText(daily, streak: streak, l10n: l10n)),
+                ),
+                const SizedBox(height: 16),
+                ValueListenableBuilder(
+                  valueListenable: services.leaderboard.boards,
+                  builder: (_, boards, _) => boards == null ? const SizedBox.shrink() : _LeaderboardsView(boards),
                 ),
                 const Spacer(),
                 Text(
@@ -180,6 +212,61 @@ class _DailyCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+const medals = ['🥇', '🥈', '🥉'];
+
+/// Top 3 of all players, scores only; the player's own entry gets a medal.
+class _LeaderboardsView extends StatelessWidget {
+  const _LeaderboardsView(this.boards);
+
+  final Leaderboards boards;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      key: const Key('leaderboards'),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(20)),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(child: _Board(title: l10n.leaderToday, entries: boards.classicToday)),
+        Expanded(child: _Board(title: l10n.leaderAllTime, entries: boards.classicAll)),
+        Expanded(child: _Board(title: l10n.leaderDaily, entries: boards.dailyToday)),
+      ]),
+    );
+  }
+}
+
+class _Board extends StatelessWidget {
+  const _Board({required this.title, required this.entries});
+
+  final String title;
+  final List<Entry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = AppLocalizations.of(context).localeName;
+    return Column(children: [
+      Text(title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1)),
+      const SizedBox(height: 6),
+      if (entries.isEmpty) const Text('—', style: TextStyle(color: Colors.white38, fontSize: 16)),
+      for (final (i, e) in entries.indexed)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 1),
+          child: Text(
+            '${e.mine ? medals[i] : '${i + 1}.'} ${formatScore(e.score, locale: locale)}',
+            style: TextStyle(
+              color: e.mine ? accent : Colors.white,
+              fontSize: 16,
+              fontWeight: e.mine ? FontWeight.w900 : FontWeight.w600,
+            ),
+          ),
+        ),
+    ]);
   }
 }
 

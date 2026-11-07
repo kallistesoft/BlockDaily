@@ -2,11 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'game/game.dart';
 import 'l10n/app_localizations.dart';
 
 import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
 import 'services/crash_reporting.dart';
+import 'services/leaderboard_service.dart';
 import 'services/premium_service.dart';
 import 'services/review_service.dart';
 import 'services/sound_service.dart';
@@ -32,9 +34,15 @@ Future<void> main() async {
   VoidCallback? showPrivacyOptions;
   UpdateService? updates;
   ReviewService review = const NoReviewService();
+  LeaderboardService leaderboard = const NoLeaderboardService();
   if (mobile) {
     try {
       await initCrashReporting();
+      await initAppCheck();
+      final boards = CachedLeaderboardService(FirestoreLeaderboardBackend());
+      leaderboard = boards;
+      // Boards are read once here; afterwards only a score that beats them triggers a read.
+      boards.load(dailyNumberFor(DateTime.now())).then((_) => boards.submitBest(stats.bestScore));
     } catch (_) {
       // Never block the game because Firebase couldn't start.
     }
@@ -57,6 +65,7 @@ Future<void> main() async {
     ads: ads,
     premium: premium,
     review: review,
+    leaderboard: leaderboard,
     banner: banner,
     privacyOptionsRequired: privacyOptionsRequired,
     showPrivacyOptions: showPrivacyOptions,
@@ -74,6 +83,7 @@ class BlockDailyApp extends StatelessWidget {
     required this.sound,
     this.premium,
     this.review = const NoReviewService(),
+    this.leaderboard = const NoLeaderboardService(),
     this.banner,
     this.privacyOptionsRequired,
     this.showPrivacyOptions,
@@ -88,6 +98,7 @@ class BlockDailyApp extends StatelessWidget {
   final SoundService sound;
   final PremiumService? premium;
   final ReviewService review;
+  final LeaderboardService leaderboard;
   final WidgetBuilder? banner;
   final ValueListenable<bool>? privacyOptionsRequired;
   final VoidCallback? showPrivacyOptions;
@@ -108,6 +119,7 @@ class BlockDailyApp extends StatelessWidget {
       sound: sound,
       premium: premium,
       review: review,
+      leaderboard: leaderboard,
       banner: banner,
       privacyOptionsRequired: privacyOptionsRequired,
       showPrivacyOptions: showPrivacyOptions,
