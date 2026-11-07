@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 /// One score on a board; [mine] marks the player's own entry.
 class Entry {
@@ -81,7 +82,8 @@ class FirestoreLeaderboardService implements LeaderboardService {
     try {
       final auth = FirebaseAuth.instance;
       return auth.currentUser?.uid ?? (await auth.signInAnonymously()).user?.uid;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('leaderboard sign-in: $e');
       return null; // offline on the very first launch: try again next game
     }
   }
@@ -132,7 +134,8 @@ class FirestoreLeaderboardService implements LeaderboardService {
       final boards = await Future.wait([top(_classicDay(day)), top(_classicAll), top(_dailyDay(day))])
           .timeout(const Duration(seconds: 8));
       return Leaderboards(classicToday: boards[0], classicAll: boards[1], dailyToday: boards[2]);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('leaderboard load: $e');
       return null;
     }
   }
