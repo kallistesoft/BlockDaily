@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'game/game.dart';
 import 'l10n/app_localizations.dart';
 
 import 'services/ad_service.dart';
@@ -37,7 +38,11 @@ Future<void> main() async {
   if (mobile) {
     try {
       await initCrashReporting();
-      leaderboard = FirestoreLeaderboardService()..submitBest(stats.bestScore);
+      await initAppCheck();
+      final boards = CachedLeaderboardService(FirestoreLeaderboardBackend());
+      leaderboard = boards;
+      // Boards are read once here; afterwards only a score that beats them triggers a read.
+      boards.load(dailyNumberFor(DateTime.now())).then((_) => boards.submitBest(stats.bestScore));
     } catch (_) {
       // Never block the game because Firebase couldn't start.
     }

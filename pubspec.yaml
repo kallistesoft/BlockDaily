@@ -51,6 +51,7 @@ dependencies:
   in_app_review: ^2.0.12
   cloud_firestore: ^7.1.0
   firebase_auth: ^7.0.1
+  firebase_app_check: ^0.5.1
 
 dev_dependencies:
   flutter_test:

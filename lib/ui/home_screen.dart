@@ -21,18 +21,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  /// Top scores of all players; reloaded after each game.
-  Future<Leaderboards?>? _boards;
-
+  /// Top scores of all players: fetched once a day (a no-op once loaded), then kept up to date by the player's posts.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _boards ??= _loadBoards();
+    _loadBoards();
   }
 
-  Future<Leaderboards?> _loadBoards() {
+  void _loadBoards() {
     final services = Services.of(context);
-    return services.leaderboard.load(dailyNumberFor(services.today()));
+    services.leaderboard.load(dailyNumberFor(services.today()));
   }
 
   /// Classic: resume the saved game if there is one.
@@ -58,9 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _open(Game game) async {
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => GameScreen(game: game)));
     if (!mounted) return;
-    setState(() {
-      _boards = _loadBoards(); // refresh best score, daily status and boards
-    });
+    _loadBoards(); // a new day since the last load, or the network is back
+    setState(() {}); // refresh best score and daily status
   }
 
   @override
@@ -93,10 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(formatScore(stats.bestScore, locale: l10n.localeName),
                       key: const Key('homeBest'),
                       style: const TextStyle(color: accent, fontSize: 20, fontWeight: FontWeight.w800)),
-                  FutureBuilder(
-                    future: _boards,
-                    builder: (_, snap) {
-                      final place = snap.data?.classicPlace;
+                  ValueListenableBuilder(
+                    valueListenable: services.leaderboard.boards,
+                    builder: (_, boards, _) {
+                      final place = boards?.classicPlace;
                       if (place == null) return const SizedBox.shrink();
                       return Padding(
                         padding: const EdgeInsets.only(left: 6),
@@ -129,9 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       : () => shareText(context, dailyShareText(daily, streak: streak, l10n: l10n)),
                 ),
                 const SizedBox(height: 16),
-                FutureBuilder(
-                  future: _boards,
-                  builder: (_, snap) => snap.data == null ? const SizedBox.shrink() : _LeaderboardsView(snap.data!),
+                ValueListenableBuilder(
+                  valueListenable: services.leaderboard.boards,
+                  builder: (_, boards, _) => boards == null ? const SizedBox.shrink() : _LeaderboardsView(boards),
                 ),
                 const Spacer(),
                 Text(
