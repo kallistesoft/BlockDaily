@@ -35,6 +35,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // Drag state.
   int? _dragSlot;
   Offset _dragGlobal = Offset.zero;
+  Offset _dragLocal = Offset.zero; // finger position inside the stack
   Ghost? _ghost;
   double _cell = 32;
 
@@ -91,6 +92,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     setState(() {
       _dragSlot = slot;
       _dragGlobal = global;
+      _dragLocal = _toStack(global);
       _ghost = _target();
     });
     _sound.play(Sfx.pick);
@@ -100,6 +102,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (_dragSlot == null) return;
     setState(() {
       _dragGlobal = global;
+      _dragLocal = _toStack(global);
       _ghost = _target();
     });
   }
@@ -113,11 +116,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (ghost != null && slot != null) _place(slot, ghost);
   }
 
+  /// Converts in the gesture handler, not in build(): during a rebuild the stack may not be laid out yet.
+  Offset _toStack(Offset global) {
+    final box = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+    return box != null && box.hasSize ? box.globalToLocal(global) : _dragLocal;
+  }
+
   /// Board cell under the dragged piece's top-left corner, if the piece fits there.
   Ghost? _target() {
     final piece = game.tray[_dragSlot!]!;
     final box = _boardKey.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null) return null;
+    if (box == null || !box.hasSize) return null;
     final topLeft = _dragGlobal - Offset(piece.cols * _cell / 2, piece.rows * _cell + _lift);
     final local = box.globalToLocal(topLeft) - const Offset(BoardPainter.padding, BoardPainter.padding);
     final row = (local.dy / _cell).round(), col = (local.dx / _cell).round();
@@ -251,8 +260,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           _cell = BoardPainter.cellSize(boardSize);
           final trayCell = _cell * 0.55;
           final dragging = _dragSlot == null ? null : game.tray[_dragSlot!];
-          final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
-          final finger = stackBox?.globalToLocal(_dragGlobal) ?? Offset.zero;
+          final finger = _dragLocal;
 
           return Stack(
             key: _stackKey,
