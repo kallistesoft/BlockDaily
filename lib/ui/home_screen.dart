@@ -36,7 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Classic: resume the saved game if there is one.
   Game _classic(StatsStore stats) {
     final saved = stats.savedGame(GameMode.classic.name);
-    return saved == null ? Game.classic() : gameFromJson(saved);
+    final random = Services.of(context).classicRandom?.call();
+    return saved == null ? Game.classic(random: random) : gameFromJson(saved, random: random);
   }
 
   /// Daily: resume today's game; a game left unfinished on an earlier day counts as that day's result.

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -98,6 +100,7 @@ class BlockDailyApp extends StatelessWidget {
     this.updateStatus,
     this.onUpdate,
     this.today = DateTime.now,
+    this.classicRandom,
     this.locale,
   });
 
@@ -116,6 +119,9 @@ class BlockDailyApp extends StatelessWidget {
   final VoidCallback? onUpdate;
   final DateTime Function() today;
 
+  /// Piece source of classic games; null deals at random.
+  final Random Function()? classicRandom;
+
   /// Forces a language (tests); null follows the phone, falling back to English.
   final Locale? locale;
 
@@ -132,6 +138,7 @@ class BlockDailyApp extends StatelessWidget {
       privacyOptionsRequired: privacyOptionsRequired,
       showPrivacyOptions: showPrivacyOptions,
       today: today,
+      classicRandom: classicRandom,
       child: MaterialApp(
         title: 'Block Daily',
         debugShowCheckedModeBanner: false,

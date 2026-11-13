@@ -57,6 +57,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late ReviewService _review;
   late LeaderboardService _leaderboard;
   late DateTime Function() _today;
+  Random Function()? _classicRandom;
   late SoundService _sound;
   late AppLocalizations _l10n;
 
@@ -72,6 +73,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _review = services.review;
     _leaderboard = services.leaderboard;
     _today = services.today;
+    _classicRandom = services.classicRandom;
     _sound = services.sound;
     _l10n = AppLocalizations.of(context);
   }
@@ -225,7 +227,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     await _record();
     await _ads.showInterstitial();
     setState(() {
-      game = Game.classic();
+      game = Game.classic(random: _classicRandom?.call());
       _over = _recorded = _newBest = false;
     });
   }
