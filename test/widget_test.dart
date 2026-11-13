@@ -286,6 +286,18 @@ void main() {
     expect(game.board.at(0, 0), piece.color);
   });
 
+  testWidgets('classic games deal from the injected piece source', (tester) async {
+    tester.view.physicalSize = const Size(412, 880);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+        BlockDailyApp(stats: stats, ads: ads, sound: sound, today: () => today, classicRandom: () => Random(4)));
+    await tester.tap(find.byKey(const Key('play')));
+    await tester.pumpAndSettle();
+    final game = (tester.widget<GameScreen>(find.byType(GameScreen))).game;
+    expect([for (final p in game.tray) p!.id], [for (final p in Game.classic(random: Random(4)).tray) p!.id]);
+  });
+
   testWidgets('a daily left unfinished yesterday is recorded, today starts fresh', (tester) async {
     final yesterday = Game.daily(5)..score = 42;
     await stats.saveGame('daily', yesterday.toJson());

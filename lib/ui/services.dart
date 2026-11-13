@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -16,6 +18,7 @@ class Services extends InheritedWidget {
     required this.ads,
     required this.sound,
     required this.today,
+    this.classicRandom,
     PremiumService? premium,
     this.review = const NoReviewService(),
     this.leaderboard = const NoLeaderboardService(),
@@ -41,6 +44,9 @@ class Services extends InheritedWidget {
 
   /// Injectable clock for the daily puzzle.
   final DateTime Function() today;
+
+  /// Piece source of classic games; null deals at random (the app). Tests and staged builds pass a seeded one.
+  final Random Function()? classicRandom;
 
   static Services of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<Services>()!;
 
